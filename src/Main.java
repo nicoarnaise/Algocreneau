@@ -10,5 +10,6 @@ public class Main {
 		
 		Mat toShow = Picross.createGrid(10, 10);
 		win.showMat(toShow);
+		Picross.MonteCarlo(toShow, Picross.V8);
 	}	
 }
