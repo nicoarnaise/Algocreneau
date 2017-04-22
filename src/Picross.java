@@ -45,10 +45,10 @@ public class Picross {
 	public static Mat MonteCarlo(Mat orig, int neighbor){
 		
 		int pointsNumber = 25*neighbor;
-		int toPick = neighbor/2;
 		Mat newMat = Mat.zeros(orig.rows(), orig.width(), CvType.CV_32SC1);
 		for(int row = 0; row<orig.rows();row++){
 			for(int col =0; col<orig.cols();col++){
+				int toPick = neighbor/2;
 				HashMap<Point,Integer> map = initMap(neighbor);
 				Vector<Point> pointsToPick = getPointsToPick(map, neighbor, pointsNumber, toPick);
 				int[] bufferToSet = new int[1];
@@ -57,7 +57,7 @@ public class Picross {
 				for(Point tmp : pointsToPick){
 					Point chosen = new Point((int)tmp.getX()+row,(int)tmp.getY()+col);
 					if(cellExist(chosen, orig)){
-						orig.get(row, col, bufftmp);
+						orig.get((int)chosen.getX(), (int)chosen.getY(), bufftmp);
 						bufferToSet[0] += bufftmp[0];
 					}else{
 						toPick--;
@@ -71,7 +71,6 @@ public class Picross {
 				newMat.put(row, col, bufferToSet);
 			}
 		}
-		
 		return newMat;
 	}
 	

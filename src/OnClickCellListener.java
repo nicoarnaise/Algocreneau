@@ -4,7 +4,7 @@ import java.awt.event.MouseListener;
 
 import org.opencv.core.Mat;
 
-public class OnClickListener implements MouseListener {
+public class OnClickCellListener implements MouseListener {
 
 	public void mouseClicked(MouseEvent e) {
 		// TODO Auto-generated method stub
@@ -12,20 +12,17 @@ public class OnClickListener implements MouseListener {
 		
 		int col = clicked.getCol();
 		int row = clicked.getRow();
-		Mat mat = clicked.getMat();
+		Mat mat = clicked.getWindow().getToShow();
 		
 		int[] buffer = new int[1];
 		mat.get(row, col, buffer);
 		
-		switch (buffer[0]) {
-		case 255:
+		if(buffer[0]>127){
 			clicked.getWindow().majMat(Picross.setBlack(mat, row, col));
 			clicked.setBackground(new Color(0,0,0));
-			break;
-		case 0:
+		}else{
 			clicked.getWindow().majMat(Picross.setWhite(mat, row, col));
 			clicked.setBackground(new Color(255,255,255));
-			break;
 		}
 	}
 
