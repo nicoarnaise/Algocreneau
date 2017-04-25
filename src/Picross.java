@@ -1,4 +1,5 @@
 import java.awt.Point;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Vector;
 
@@ -6,99 +7,107 @@ import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 
 public class Picross {
-	
-	public static final int V4  = 4;
-	public static final int V8  = 8;
-	
-	public static Mat createGrid(int height, int width){
-		
-		int[] buffer = new int[1];
+
+	public static final int V4 = 4;
+	public static final int V8 = 8;
+
+	public static Mat createGrid(int height, int width) {
+
+		double[] buffer = new double[3];
 		buffer[0] = 255;
-		Mat grid = Mat.ones(height, width, CvType.CV_32SC1);
-		for(int i=0; i<height; i++){
-			for(int j=0; j<width; j++){
+		buffer[1] = 255;
+		buffer[2] = 255;
+		Mat grid = Mat.ones(height, width, CvType.CV_64FC3);
+		for (int i = 0; i < height; i++) {
+			for (int j = 0; j < width; j++) {
 				grid.put(i, j, buffer);
 			}
 		}
 		return grid;
-		
+
 	}
-	
-	public static Mat setBlack(Mat orig, int row, int col){
-		
-		int[] buffer = new int[1];
+
+	public static Mat setBlack(Mat orig, int row, int col) {
+
+		double[] buffer = new double[3];
 		buffer[0] = 0;
+		buffer[1] = 0;
+		buffer[2] = 0;
 		orig.put(row, col, buffer);
-		
+
 		return orig;
 	}
-	
-	public static Mat setWhite(Mat orig, int row, int col){
-		
-		int[] buffer = new int[1];
+
+	public static Mat setWhite(Mat orig, int row, int col) {
+
+		double[] buffer = new double[3];
 		buffer[0] = 255;
+		buffer[1] = 255;
+		buffer[2] = 255;
 		orig.put(row, col, buffer);
-		
+
 		return orig;
 	}
-	
-	public static Mat MonteCarlo(Mat orig, int neighbor){
-		
-		int pointsNumber = 25*neighbor;
-		Mat newMat = Mat.zeros(orig.rows(), orig.width(), CvType.CV_32SC1);
-		for(int row = 0; row<orig.rows();row++){
-			for(int col =0; col<orig.cols();col++){
-				int toPick = neighbor/2;
-				HashMap<Point,Integer> map = initMap(neighbor);
-				Vector<Point> pointsToPick = getPointsToPick(map, neighbor, pointsNumber, toPick);
-				int[] bufferToSet = new int[1];
+
+	public static Mat MonteCarlo(Mat orig, int neighbor) {
+
+		int pointsNumber = 25 * neighbor;
+		Mat newMat = Mat.zeros(orig.rows(), orig.width(), orig.type());
+		for (int row = 0; row < orig.rows(); row++) {
+			for (int col = 0; col < orig.cols(); col++) {
+				int toPick = neighbor / 2;
+				double[] bufferToSet = new double[3];
 				bufferToSet[0] = 0;
-				int[] bufftmp = new int[1];
-				for(Point tmp : pointsToPick){
-					Point chosen = new Point((int)tmp.getX()+row,(int)tmp.getY()+col);
-					if(cellExist(chosen, orig)){
-						orig.get((int)chosen.getX(), (int)chosen.getY(), bufftmp);
+				HashMap<Point, Integer> map = initMap(neighbor);
+				Vector<Point> pointsToPick = getPointsToPick(map, neighbor, pointsNumber, toPick);
+				double[] bufftmp = new double[3];
+				for (Point tmp : pointsToPick) {
+					Point chosen = new Point((int) tmp.getX() + row, (int) tmp.getY() + col);
+					if (cellExist(chosen, orig)) {
+						bufftmp = orig.get((int) chosen.getX(), (int) chosen.getY());
 						bufferToSet[0] += bufftmp[0];
-					}else{
+					} else {
 						toPick--;
 					}
 				}
-				if(toPick > 0){
+				if (toPick > 0) {
 					bufferToSet[0] /= toPick;
-				}else{
-					orig.get(row, col, bufferToSet);
+				} else {
+					bufferToSet = orig.get(row, col);
 				}
 				newMat.put(row, col, bufferToSet);
 			}
 		}
 		return newMat;
 	}
-	
-	private static boolean cellExist(Point toCheck, Mat orig){
-		return !(toCheck.getX()<0 || toCheck.getY()<0 || toCheck.getX()>=orig.rows() || toCheck.getY()>=orig.cols());
+
+	private static boolean cellExist(Point toCheck, Mat orig) {
+		return !(toCheck.getX() < 0 || toCheck.getY() < 0 || toCheck.getX() >= orig.rows()
+				|| toCheck.getY() >= orig.cols());
 	}
 
-	private static Vector<Point> getPointsToPick(HashMap<Point, Integer> map, int neighbor, int pointsNumber, int toPick) {
+	private static Vector<Point> getPointsToPick(HashMap<Point, Integer> map, int neighbor, int pointsNumber,
+			int toPick) {
 		Point p = new Point();
-		for(int i=0; i<pointsNumber; i++){
-			int tokenX = (int)(Math.random()*3)-1;
-			int tokenY = (int)(Math.random()*3)-1;
-			if(neighbor == V4){
-				while(Math.abs(tokenX)==1 && Math.abs(tokenY)==1){
-					tokenX = (int)(Math.random()*3)-1;
-					tokenY = (int)(Math.random()*3)-1;
+		for (int i = 0; i < pointsNumber; i++) {
+			int tokenX = (int) (Math.random() * 3) - 1;
+			int tokenY = (int) (Math.random() * 3) - 1;
+			if (neighbor == V4) {
+				while (Math.abs(tokenX) == 1 && Math.abs(tokenY) == 1) {
+					tokenX = (int) (Math.random() * 3) - 1;
+					tokenY = (int) (Math.random() * 3) - 1;
 				}
 			}
 			p.setLocation(tokenX, tokenY);
 			map.put(p, map.get(p) + 1);
 		}
-		
-		Vector<Point> pointsToPick = new Vector<Point>(); 
-		while(pointsToPick.size()<toPick){
+
+		Vector<Point> pointsToPick = new Vector<Point>();
+		while (pointsToPick.size() < toPick) {
 			int max = -1;
 			Point picked = new Point();
-			for(Point tmp : map.keySet()){
-				if(map.get(tmp)>max){
+			for (Point tmp : map.keySet()) {
+				if (map.get(tmp) > max) {
 					picked = tmp;
 					max = map.get(tmp);
 				}
@@ -106,13 +115,13 @@ public class Picross {
 			map.put(picked, 0);
 			pointsToPick.add(picked);
 		}
-		
+
 		return pointsToPick;
 	}
 
-	private static HashMap<Point,Integer> initMap(int neighbor) {
-		HashMap<Point,Integer> map = new HashMap<Point, Integer>();
-		if(neighbor==V8){
+	private static HashMap<Point, Integer> initMap(int neighbor) {
+		HashMap<Point, Integer> map = new HashMap<Point, Integer>();
+		if (neighbor == V8) {
 			Point pos = new Point();
 			pos.setLocation(-1, -1);
 			map.put(pos, 0);
@@ -141,7 +150,19 @@ public class Picross {
 		Point pos9 = new Point();
 		pos9.setLocation(0, 0);
 		map.put(pos9, 0);
-		
+
 		return map;
+	}
+	
+	public static int checkScore(Mat orig, Mat current){
+		int score = 0;
+		for(int i = 0; i < orig.rows(); i++){
+			for(int j=0; j < orig.cols(); j++){
+				if(Arrays.equals(orig.get(i,j),current.get(i,j)))
+					score++;
+			}
+		}
+		score = (score*100)/(orig.rows()*orig.cols());
+		return score;
 	}
 }

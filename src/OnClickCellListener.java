@@ -14,8 +14,8 @@ public class OnClickCellListener implements MouseListener {
 		int row = clicked.getRow();
 		Mat mat = clicked.getWindow().getToShow();
 		
-		int[] buffer = new int[1];
-		mat.get(row, col, buffer);
+		double[] buffer = new double[1];
+		buffer = mat.get(row, col);
 		
 		if(buffer[0]>127){
 			clicked.getWindow().majMat(Picross.setBlack(mat, row, col));
