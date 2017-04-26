@@ -71,7 +71,7 @@ public class Menu extends JFrame implements ActionListener {
 		}
 		if(e.getSource() == recon){
 			Window originDraw = new Window(this, Window.RESULT);
-			Mat toShow = Imgcodecs.imread("/home/nico/picross3.bmp");
+			Mat toShow = Imgcodecs.imread("./picross3.bmp");
 			originDraw.showMat(Picross.MonteCarlo(toShow, Picross.V8));
 			originDraw.setOrig(toShow);
 			
