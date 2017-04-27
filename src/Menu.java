@@ -1,9 +1,13 @@
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
+
 import javax.swing.GroupLayout;
 import javax.swing.JButton;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.filechooser.FileNameExtensionFilter;
 
 import org.opencv.core.Mat;
 import org.opencv.imgcodecs.Imgcodecs;
@@ -16,6 +20,7 @@ public class Menu extends JFrame implements ActionListener {
 	private static final long serialVersionUID = 1L;
 
 	private JLabel titleLabel = new JLabel("Welcome to the Picross Casino !");
+	private JLabel credits = new JLabel("Game created by Nicolas ARNAISE & Vincent NGUYEN");
 	private JButton recon = new JButton("Recognition");
 	private JButton crea = new JButton("Creation");
 	private JButton quitButton = new JButton("Quit");
@@ -38,6 +43,8 @@ public class Menu extends JFrame implements ActionListener {
 					.addComponent(recon)
 					.addComponent(crea)
 					.addComponent(quitButton)
+					.addGap(20)
+					.addComponent(credits)
 		);
 		layout.setVerticalGroup(
 				layout.createSequentialGroup()
@@ -46,6 +53,8 @@ public class Menu extends JFrame implements ActionListener {
 					.addComponent(recon)
 					.addComponent(crea)
 					.addComponent(quitButton)
+					.addGap(20)
+					.addComponent(credits)
 		);
 		
 		this.setTitle("Casino Picross");
@@ -70,16 +79,25 @@ public class Menu extends JFrame implements ActionListener {
 			this.setVisible(false);
 		}
 		if(e.getSource() == recon){
-			Window originDraw = new Window(this, Window.RESULT);
-			Mat toShow = Imgcodecs.imread("./picross3.bmp");
-			originDraw.showMat(Picross.MonteCarlo(toShow, Picross.V8));
-			originDraw.setOrig(toShow);
 			
-			Window drawing = new Window(this, Window.RECOGNITION);
-			Mat toDrow = Picross.createGrid(toShow.rows(), toShow.cols());
-			drawing.showMat(toDrow);
-			drawing.setChild(originDraw);
-			this.setVisible(false);
+			JFileChooser chooser = new JFileChooser(new File("./Grids"));
+		    FileNameExtensionFilter filter = new FileNameExtensionFilter(
+		        "Images", "jpg", "gif", "png", "bmp", "jpeg");
+		    chooser.setFileFilter(filter);
+		    int returnVal = chooser.showOpenDialog(this);
+		    if(returnVal == JFileChooser.APPROVE_OPTION) {
+		      Mat toShow = Imgcodecs.imread(chooser.getSelectedFile().getAbsolutePath());
+		       
+		      Window originDraw = new Window(this, Window.RESULT);
+		      originDraw.showMat(Picross.MonteCarlo(toShow, Picross.V8));
+		      originDraw.setOrig(toShow);
+			
+		      Window drawing = new Window(this, Window.RECOGNITION);
+		      Mat toDrow = Picross.createGrid(toShow.rows(), toShow.cols());
+		      drawing.showMat(toDrow);
+		      drawing.setChild(originDraw);
+		      this.setVisible(false);
+		    }
 		}
 	}
 	

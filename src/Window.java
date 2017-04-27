@@ -215,7 +215,7 @@ public class Window extends JFrame implements ActionListener {
 	public void actionPerformed(ActionEvent e) {
 		// TODO Auto-generated method stub
 		if ("ImportImg".equals(e.getActionCommand())) {
-			JFileChooser chooser = new JFileChooser();
+			JFileChooser chooser = new JFileChooser("./Grids");
 		    FileNameExtensionFilter filter = new FileNameExtensionFilter(
 		        "Images", "jpg", "gif", "png", "bmp", "jpeg");
 		    chooser.setFileFilter(filter);
